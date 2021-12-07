@@ -28,7 +28,7 @@ const filter = {
   indexFrom: 0,
 };
 
-export const Mnemonics = () => {
+export const Mnemonics = ({navigation}) => {
   const {currentState} = useSelector(
     state => ({
       currentState: state.mnemonic,
@@ -54,7 +54,6 @@ export const Mnemonics = () => {
           wordList.push(word);
         }
       });
-      // console.log({wordList});
       return wordList;
     } else {
       return [];
@@ -62,12 +61,12 @@ export const Mnemonics = () => {
   };
 
   useEffect(() => {
-    if (!currentState.initComplete) {
-      saveSession();
-    }
-    if (currentState && currentState.initComplete && !initApp) {
+    saveSession();
+  }, []);
+
+  useEffect(() => {
+    if (currentState && currentState.initComplete) {
       SplashScreen.hide();
-      setInitApp(true);
     }
   }, [currentState]);
 
@@ -146,11 +145,11 @@ export const Mnemonics = () => {
     return words;
   };
 
-  const onPressButton = async e => {
-    setGenerating(true);
+  const onPressButton = e => {
     let rules = generate();
 
-    await dispatch(action.generateMnemonics(rules));
+    dispatch(action.generateMnemonics(rules));
+    navigation.navigate('Generated Mnemonics');
   };
 
   const generate = () => {
@@ -208,7 +207,9 @@ export const Mnemonics = () => {
     });
     return rules;
   };
+
   console.log({actionsLoading});
+
   return (
     <View style={styles.mainContainer}>
       <ImageBackground
@@ -216,9 +217,7 @@ export const Mnemonics = () => {
         // resizeMode="cover"
         style={styles.image}>
         <View style={styles.container}>
-          {!actionsLoading && (
-            <ActivityIndicator size="large" color="#00ff00" />
-          )}
+          {actionsLoading && <ActivityIndicator size="large" color="#00ff00" />}
           <View>
             <TextInput
               multiline={true}

@@ -11,6 +11,7 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {Image} from 'react-native';
 import {store} from './store';
 import {Provider} from 'react-redux';
+import {MnemonicResults} from './MnemonicResults';
 
 const Stack = createNativeStackNavigator();
 
@@ -35,7 +36,10 @@ const StackScreens = () => {
               headerTitleStyle: {flex: 1, textAlign: 'center'},
             }}
           />
-          <Stack.Screen name="Profile" component={App} />
+          <Stack.Screen
+            name="Generated Mnemonics"
+            component={MnemonicResults}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     </Provider>

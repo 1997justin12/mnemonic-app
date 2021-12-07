@@ -22,9 +22,15 @@ export const initComplete = () => {
   return dispatch(actions.initComplete());
 };
 
-export const generateMnemonics = rules => async dispatch => {
+export const generateMnemonics = rules => dispatch => {
   dispatch(actions.startCall({callType: callTypes.action}));
-  let rg = await RiTa.grammar(rules);
-  let mnemonic = await rg.expand();
-  dispatch(actions.generatedMnemonic({mnemonic}));
+  let rg = RiTa.grammar(rules);
+  let mnemonics = [];
+
+  for (let x = 0; x < 10; x++) {
+    let mnemonic = rg.expand();
+    mnemonics.push(mnemonic);
+  }
+
+  dispatch(actions.generatedMnemonic({mnemonics}));
 };

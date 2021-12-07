@@ -34,7 +34,7 @@ const initialMnemonicState = {
     y: [],
     z: [],
   },
-  generatedMnemonic: '',
+  generatedMnemonics: '',
 };
 
 export const callTypes = {
@@ -63,7 +63,9 @@ export const mnemonicSlice = createSlice({
         state.listLoading = true;
       } else {
         state.actionsLoading = true;
+        console.log('LOADING...');
       }
+      console.log(state.actionsLoading);
     },
     initComplete: (state, action) => {
       state.initComplete = true;
@@ -88,7 +90,7 @@ export const mnemonicSlice = createSlice({
     generatedMnemonic: (state, action) => {
       console.log('TEST', action.payload);
       state.actionsLoading = false;
-      state.generatedMnemonic = action.payload.mnemonic;
+      state.generatedMnemonics = action.payload.mnemonics;
     },
   },
 });
