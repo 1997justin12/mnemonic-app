@@ -12,6 +12,11 @@ target 'mnemonic' do
     :hermes_enabled => false
   )
 
+
+  pod 'react-native-splash-screen', :path => '../node_modules/react-native-splash-screen'
+
+  pod 'react-native-sqlite-storage', :path => '../node_modules/react-native-sqlite-storage'
+
   target 'mnemonicTests' do
     inherit! :complete
     # Pods for testing
