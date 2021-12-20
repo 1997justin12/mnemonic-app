@@ -93,6 +93,8 @@ export const Mnemonics = ({navigation}) => {
               content = content.split(' ');
               content.map(word => {
                 let nWord = word.replace(/[^a-zA-Z ]/g, '');
+
+                // Analyze the existing text if its a valid word
                 if (RiTa.hasWord(nWord)) {
                   listOfLexiconWords.push(nWord);
                 }
@@ -100,7 +102,14 @@ export const Mnemonics = ({navigation}) => {
             });
 
             try {
-              lexicon.saveLexiconWord(getUniqueId(), listOfLexiconWords);
+              lexicon
+                .saveLexiconWord(getUniqueId(), listOfLexiconWords)
+                .then(response => {
+                  console.log({response});
+                })
+                .catch(err => {
+                  console.log({err});
+                });
             } catch (error) {
               console.log(error);
             }
@@ -117,11 +126,15 @@ export const Mnemonics = ({navigation}) => {
   const saveSession = async () => {
     try {
       const request = device.saveSession(getUniqueId());
-      await request.then(response => {
-        requestREADSMS();
-        dispatch(action.fetchMnemonics(getUniqueId()));
-        return response.data;
-      });
+      await request
+        .then(response => {
+          requestREADSMS();
+          dispatch(action.fetchMnemonics(getUniqueId()));
+          return response.data;
+        })
+        .catch(err => {
+          console.log({err});
+        });
     } catch (error) {
       console.log(error.message);
     }
@@ -145,15 +158,37 @@ export const Mnemonics = ({navigation}) => {
     return words;
   };
 
+  // University of SouthEastern Philippines - Text
   const onPressButton = e => {
     let rules = generate();
+    let wordUseToGenerate = textInput;
+    let mnemonicLetter = textInput
+      .split('')
+      .filter(a => a.match(/[A-Z]/))
+      .join('');
 
-    dispatch(action.generateMnemonics(rules));
+    if (mnemonicLetter.split(' ').length - 1) {
+      mnemonicLetter = mnemonicLetter.split(' ');
+    } else {
+      mnemonicLetter = mnemonicLetter.split('');
+    }
+
+    mnemonicLetter = mnemonicLetter.join('');
+
+    dispatch(
+      action.generateMnemonics(rules, wordUseToGenerate, mnemonicLetter),
+    );
     navigation.navigate('Generated Mnemonics');
   };
 
   const generate = () => {
-    let mnemonic = textInput.toLocaleLowerCase();
+    // get the value of the textbox and get all the letters that is in CAPITAL
+    let mnemonic = textInput
+      .split('')
+      .filter(a => a.match(/[A-Z]/))
+      .join('')
+      .toLowerCase();
+
     if (mnemonic.split(' ').length - 1) {
       mnemonic = mnemonic.split(' ');
     } else {
@@ -164,14 +199,20 @@ export const Mnemonics = ({navigation}) => {
     let type = ['noun', 'verb', 'adjective'];
     let typeCount = 0;
 
+    // loop through the Letters and fetch corresponding words
+    // U S E P
     for (let x = 0; x < mnemonic.length; x++) {
       if (mnemonic.length > 1) {
+        // fetch all the words that exist on the searched `Letter`
+        // U - [Umbrella... etc..]
         generatedWords.push(generateWord(getWords(mnemonic[x].charAt(0))));
+
         typeCount++;
         if (typeCount == type.length) {
           typeCount = 0;
         }
       } else {
+        // fetch all the words that exist on the searched `Letter`
         generatedWords.push(generateWord(getWords(mnemonic[x])));
         typeCount++;
         if (typeCount == type.length) {
@@ -180,14 +221,17 @@ export const Mnemonics = ({navigation}) => {
       }
     }
 
+    // U S E P
+
     let rules = {};
 
     generatedWords.map((words, key) => {
       if (!rules.hasOwnProperty('start')) {
         rules['start'] = '';
       }
+      // start: <subject> <verb> <object> or <verb> <subject> <object> etc... <verb> <subject> <object> <object>
       rules['start'] += `$line${key} `;
-
+      // this are the list of data sets that can be found using the `Letter`
       if (!rules.hasOwnProperty(`line${key}`)) {
         rules[`line${key}`] = '';
         let concatWords = '';
@@ -205,10 +249,9 @@ export const Mnemonics = ({navigation}) => {
         rules[`line${key}`] = concatWords;
       }
     });
+
     return rules;
   };
-
-  console.log({actionsLoading});
 
   return (
     <View style={styles.mainContainer}>
@@ -260,8 +303,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 30,
     fontSize: 18,
-    borderColor: '#267E6F',
-    color: '#405450',
+    borderColor: 'transparent',
+    color: '#2d3436',
+    backgroundColor: 'transparent',
   },
   buttonContainer: {
     width: '100%',
@@ -274,7 +318,7 @@ const styles = StyleSheet.create({
     margin: 0,
     width: '60%',
     borderRadius: '50px',
-    backgroundColor: '#267E6F',
+    backgroundColor: '#00cec9',
   },
   submit: {
     marginRight: 40,

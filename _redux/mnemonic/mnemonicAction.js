@@ -22,15 +22,33 @@ export const initComplete = () => {
   return dispatch(actions.initComplete());
 };
 
-export const generateMnemonics = rules => dispatch => {
-  dispatch(actions.startCall({callType: callTypes.action}));
-  let rg = RiTa.grammar(rules);
-  let mnemonics = [];
+export const generateMnemonics =
+  (rules, wordUseToGenerate, mnemonicLetter) => dispatch => {
+    dispatch(actions.startCall({callType: callTypes.action}));
 
-  for (let x = 0; x < 10; x++) {
-    let mnemonic = rg.expand();
-    mnemonics.push(mnemonic);
-  }
+    // Used to generate sentences based on the set rules
+    let rg = RiTa.grammar(rules);
+    let mnemonics = [];
 
-  dispatch(actions.generatedMnemonic({mnemonics}));
-};
+    for (let x = 0; x < 10; x++) {
+      let mnemonic = rg.expand();
+      mnemonics.push(mnemonic);
+    }
+
+    dispatch(
+      actions.generatedMnemonic({mnemonics, wordUseToGenerate, mnemonicLetter}),
+    );
+  };
+
+export const saveMnemonics =
+  (wordUseToGenerate, mnemonicLetter, selectedWords) => dispatch => {
+    dispatch(actions.startCall({callType: callTypes.action}));
+    return requestFromServer
+      .saveMnemonics(wordUseToGenerate, mnemonicLetter, selectedWords)
+      .then(response => {
+        console.log({response});
+      })
+      .catch(err => {
+        console.log({err});
+      });
+  };
