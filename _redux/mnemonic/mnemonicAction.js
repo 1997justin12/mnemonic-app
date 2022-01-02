@@ -41,10 +41,15 @@ export const generateMnemonics =
   };
 
 export const saveMnemonics =
-  (wordUseToGenerate, mnemonicLetter, selectedWords) => dispatch => {
+  (wordUseToGenerate, mnemonicLetter, selectedWords, device_id) => dispatch => {
     dispatch(actions.startCall({callType: callTypes.action}));
     return requestFromServer
-      .saveMnemonics(wordUseToGenerate, mnemonicLetter, selectedWords)
+      .saveMnemonics(
+        wordUseToGenerate,
+        mnemonicLetter,
+        selectedWords,
+        device_id,
+      )
       .then(response => {
         console.log({response});
       })
@@ -52,3 +57,17 @@ export const saveMnemonics =
         console.log({err});
       });
   };
+
+export const getHistories = device_id => dispatch => {
+  dispatch(actions.startCall({callType: callTypes.action}));
+  return requestFromServer
+    .getMnemonicHistories(device_id)
+    .then(response => {
+      const {data = {}} = response;
+      const {mnemonics = []} = data;
+      dispatch(actions.mnemonicHistories({mnemonics}));
+    })
+    .catch(err => {
+      console.log({err});
+    });
+};

@@ -8,10 +8,11 @@ import {Mnemonics} from './Mnemonic';
 import {name as appName} from './app.json';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import {Image} from 'react-native';
+import {Image, Text, TouchableOpacity} from 'react-native';
 import {store} from './store';
 import {Provider} from 'react-redux';
 import {MnemonicResults} from './MnemonicResults';
+import {MnemonicHistory} from './MnemonicHistory';
 
 const Stack = createNativeStackNavigator();
 
@@ -23,7 +24,7 @@ const StackScreens = () => {
           <Stack.Screen
             name="Home"
             component={Mnemonics}
-            options={{
+            options={({navigation}) => ({
               headerTitle: (
                 props, // App Logo
               ) => (
@@ -34,12 +35,20 @@ const StackScreens = () => {
                 />
               ),
               headerTitleStyle: {flex: 1, textAlign: 'center'},
-            }}
+              headerRight: () => (
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('Mnemonic History')}
+                  color="#000">
+                  <Text>History</Text>
+                </TouchableOpacity>
+              ),
+            })}
           />
           <Stack.Screen
             name="Generated Mnemonics"
             component={MnemonicResults}
           />
+          <Stack.Screen name="Mnemonic History" component={MnemonicHistory} />
         </Stack.Navigator>
       </NavigationContainer>
     </Provider>

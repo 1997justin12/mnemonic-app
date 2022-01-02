@@ -37,6 +37,7 @@ const initialMnemonicState = {
   generatedMnemonics: '',
   mnemonicLetter: '',
   wordUseToGenerate: '',
+  mnemonicHistories: [],
 };
 
 export const callTypes = {
@@ -94,6 +95,11 @@ export const mnemonicSlice = createSlice({
       state.generatedMnemonics = action.payload.mnemonics;
       state.wordUseToGenerate = action.payload.wordUseToGenerate;
       state.mnemonicLetter = action.payload.mnemonicLetter;
+    },
+    mnemonicHistories: (state, action) => {
+      const {mnemonics = []} = action.payload;
+      state.actionsLoading = false;
+      state.mnemonicHistories = mnemonics;
     },
   },
 });

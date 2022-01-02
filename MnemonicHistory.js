@@ -2,53 +2,71 @@ import React, {useEffect, useState} from 'react';
 import {
   FlatList,
   SafeAreaView,
-  StatusBar,
   StyleSheet,
   Text,
+  ImageBackground,
   TouchableOpacity,
   View,
-  ImageBackground,
 } from 'react-native';
-import {saveMnemonics} from './_redux/mnemonic/mnemonicAction';
-import {shallowEqual, useSelector, useDispatch} from 'react-redux';
+import * as actions from './_redux/mnemonic/mnemonicAction';
 import {getUniqueId} from 'react-native-device-info';
+import {shallowEqual, useDispatch, useSelector} from 'react-redux';
 
-const Item = ({item, onPress, backgroundColor, textColor, borderColor}) => (
-  <TouchableOpacity
-    onPress={onPress}
-    style={[styles.item, backgroundColor, borderColor]}>
-    <Text style={[styles.title, textColor]}>{item}</Text>
-  </TouchableOpacity>
-);
+const Item = ({item, onPress, backgroundColor, textColor, borderColor}) => {
+  return (
+    <>
+      <TouchableOpacity
+        onPress={onPress}
+        style={[styles.item, backgroundColor, borderColor]}>
+        <Text style={[styles.title, textColor]}>{item?.word}</Text>
+      </TouchableOpacity>
+      {item.selected && (
+        <View style={styles.viewMnemonics}>
+          {item.phrases.map(iitem => {
+            return <Text style={styles.fontSizeText}>{iitem.phrase}</Text>;
+          })}
+        </View>
+      )}
+    </>
+  );
+};
 
-export const MnemonicResults = () => {
+export const MnemonicHistory = () => {
   const dispatch = useDispatch();
+  const [mnemonics, setMnemonics] = useState([]);
+  const [selectedWords, setSelectedWords] = useState([]);
   const {currentState} = useSelector(
     state => ({
       currentState: state.mnemonic,
     }),
     shallowEqual,
   );
-  const [generatedMnemonics, setGeneratedMnemonics] = useState([]);
-  const [selectedWords, setSelectedWords] = useState([]);
+  const {mnemonicHistories = []} = currentState;
+  console.log({mnemonicHistories});
+  useEffect(() => {
+    dispatch(actions.getHistories(getUniqueId()));
+  }, []);
 
   useEffect(() => {
-    if (currentState && currentState.generatedMnemonics) {
+    if (currentState && currentState.mnemonicHistories) {
       let list = [];
-
-      currentState.generatedMnemonics.map((item, index) => {
-        list.push({id: index + 1, word: item, selected: false});
+      mnemonicHistories.map((item, index) => {
+        list.push({
+          id: index,
+          word: item.word,
+          selected: false,
+          phrases: item?.phrases,
+        });
       });
-
-      setGeneratedMnemonics(list);
+      setMnemonics(list);
     }
-  }, [currentState.generatedMnemonics]);
+  }, [currentState.mnemonicHistories]);
 
   const selectWord = id => {
     if (selectedWords.indexOf(id) == -1) {
       if (selectedWords.length < 3) {
         let items = [...selectedWords, id];
-        generatedMnemonics.map(item => {
+        mnemonics.map(item => {
           if (item.id === id) {
             item.selected = true;
           }
@@ -60,7 +78,7 @@ export const MnemonicResults = () => {
       let selectedWordIndex = selectedWords.indexOf(id);
       let items = selectedWords;
       items.splice(selectedWordIndex, 1);
-      generatedMnemonics.map(item => {
+      mnemonics.map(item => {
         if (item.id === id) {
           item.selected = false;
         }
@@ -71,13 +89,12 @@ export const MnemonicResults = () => {
   };
 
   const renderItem = ({item}) => {
-    const backgroundColor = item.selected == true ? '#81ecec' : '#fff';
-    const color = item.selected == true ? '#2d3436' : '#2d3436';
-    const borderColor = item.selected == true ? '#2d3436' : '#00cec9';
-
+    const backgroundColor = '#fff';
+    const color = '#2d3436';
+    const borderColor = '#cfcfcf';
     return (
       <Item
-        item={item.word}
+        item={item}
         onPress={() => selectWord(item.id)}
         backgroundColor={{backgroundColor}}
         textColor={{color}}
@@ -86,45 +103,15 @@ export const MnemonicResults = () => {
     );
   };
 
-  const saveSelected = e => {
-    e.preventDefault();
-    let selectedWords = [];
-    generatedMnemonics.map(item => {
-      if (item.selected) {
-        selectedWords.push(item.word);
-      }
-    });
-
-    dispatch(
-      saveMnemonics(
-        currentState.wordUseToGenerate,
-        currentState.mnemonicLetter,
-        selectedWords,
-        getUniqueId(),
-      ),
-    );
-  };
-
   return (
     <SafeAreaView style={styles.container}>
-      <ImageBackground
-        source={require('./assets/bg.jpg')}
-        // resizeMode="cover"
-        style={styles.image}>
+      <ImageBackground source={require('./assets/bg.jpg')} style={styles.image}>
         <FlatList
-          data={generatedMnemonics}
+          data={mnemonics}
           renderItem={renderItem}
           keyExtractor={item => item.id}
           extraData={selectedWords}
         />
-        {selectedWords && selectedWords.length === 3 && (
-          <TouchableOpacity
-            style={styles.submit}
-            onPress={saveSelected}
-            underlayColor="#1E5E52">
-            <Text style={styles.submitText}>SAVE SELECTED WORD</Text>
-          </TouchableOpacity>
-        )}
       </ImageBackground>
     </SafeAreaView>
   );
@@ -140,10 +127,10 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     paddingLeft: 10,
     paddingRight: 10,
-    marginVertical: 8,
-    marginHorizontal: 16,
+    // marginVertical: 8,
+    // marginHorizontal: 16,
     borderWidth: 1,
-    borderRadius: 5,
+    // borderRadius: 5,
     backgroundColor: '#fff',
   },
   title: {
@@ -172,5 +159,18 @@ const styles = StyleSheet.create({
   image: {
     flex: 1,
     justifyContent: 'center',
+  },
+  viewMnemonics: {
+    backgroundColor: '#fff',
+    padding: 5,
+    borderColor: '#cecece',
+    borderWidth: 1,
+  },
+  fontSizeText: {
+    fontSize: 14,
+    textAlign: 'center',
+    textTransform: 'capitalize',
+    margin: 5,
+    fontWeight: 'bold',
   },
 });
